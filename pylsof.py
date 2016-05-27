@@ -39,10 +39,11 @@ def proc_path(pid, name):
 
 def print_cmdline(pid):
     s, cmdline = exec_adb_cmd("cat", proc_path(pid, 'cmdline'))
-    print("cmdline:", cmdline)
+    print("\n>>>>cmdline:\t", cmdline)
 
 
 def print_status(pid):
+    print("\n>>>>>status")
     s, status = exec_adb_cmd("cat", proc_path(pid, 'status'))
     for line in status.split("\n"):
         if 'Name:' in line: print(line)
@@ -57,7 +58,7 @@ def print_fdinfo(pid):
         lrwx------ root		root			  2010-01-02 23:11 10 -> /newplus_temp/SoftSupport/TG3SMEM_X_FontShareCache_48579487
         lrwx------ root		root			  2010-01-02 23:11 11 -> socket:[7502]
     '''
-
+    print("\n>>>>>fdinfo")
     s, fds = exec_adb_cmd("ls -l", proc_path(pid, 'fd'))
     fdinfos = list()
 
@@ -99,6 +100,7 @@ def print_maps(pid):
     7fb6098000-7fb6099000 rw-p 00001000 b3:15 3993							 /system/vendor/lib64/libril-qcril-hook-oem.so
     7fb6099000-7fb609a000 r-xp 00000000 b3:15 4001							 /system/vendor/lib64/libsmemlog.so
     '''
+    print("\n>>>>>memory maps")
     s, maps = exec_adb_cmd("cat", proc_path(pid, 'maps'))
     prev = None
     for line in maps.split('\n'):
@@ -121,6 +123,7 @@ def analysis_unix_domain(pid=None):
         the status of the socket.  Currently, type is always "1" (UNIX domain datagram sockets are not yet supported in the kernel).  "St" is the internal state of the socket	and	 Path  is
         the bound path (if any) of the socket.
     '''
+    print("\n>>>>>unix sockets")
     global sockets_info
     if pid:
         s, sockets = exec_adb_cmd("cat /proc/net/unix")
@@ -142,6 +145,7 @@ def analysis_tcp_domain(pid=None):
    1: 0100007F:0BB8 00000000:0000 0A 00000000:00000000 00:00000000 00000000		0		 0 7818 1 0000000000000000 100 0 0 10 0
    2: 0100007F:13BA 00000000:0000 0A 00000000:00000000 00:00000000 00000000 21000		 0 49283 1 0000000000000000 100 0 0 10 0
     '''
+    print("\n>>>>>tcp sockets")
     global sockets_info
     if pid:
         s, sockets = exec_adb_cmd("cat /proc/net/tcp")
@@ -163,6 +167,7 @@ def analysis_udp_domain(pid=None):
   sl   local_address rem_address   st tx_queue			rx_queue	tr	  tm->when retrnsmt	  uid  timeout inode ref pointer drops
   118: 0100007F:1A86 00000000:0000 07 00000000:00000000 00:00000000 00000000					0		 0 7088	  2 0000000000000000 0
     '''
+    print("\n>>>>>udp sockets")
     global sockets_info
     if pid:
         s, sockets = exec_adb_cmd("cat /proc/net/udp")
