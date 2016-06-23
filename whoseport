@@ -3,7 +3,7 @@ import subprocess
 import sys
 def checkpid(port):
 	s,o=subprocess.getstatusoutput("netstat -tlnp|grep {}".format(port))
-	pid=-1
+	pid=None
 	if s: return pid
 	for line in o.split('\n'):
 		if line.startswith("tcp"):
@@ -18,9 +18,10 @@ def checkpid(port):
 
 #startssh()
 pid=checkpid(sys.argv[1])
-print(pid)
-ret = -1 if not pid else 0
-#exit(ret)
+pid = -1 if not pid else int(pid)
+if pid >0: print(pid)
+ret = 0 if pid > 0 else -1
+exit(ret)
 
 
 	
