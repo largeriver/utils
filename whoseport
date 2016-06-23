@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+import subprocess
+import sys
+def checkpid(port):
+	s,o=subprocess.getstatusoutput("netstat -tlnp|grep {}".format(port))
+	pid=-1
+	if s: return pid
+	for line in o.split('\n'):
+		if line.startswith("tcp"):
+			pid=line.split()[-1].split('/')[0]
+	#print("pid=",pid)
+	return pid
+
+
+#def startssh():
+#	subprocess.getstatusoutput("ssh -N -f -D 192.168.26.11:15038  hyyc_data@andjoin.com")
+
+
+#startssh()
+pid=checkpid(sys.argv[1])
+print(pid)
+ret = -1 if not pid else 0
+#exit(ret)
+
+
+	
