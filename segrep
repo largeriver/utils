@@ -8,6 +8,14 @@ from os.path import join, basename
 file_count = 0
 line_count = 0
 
+'''
+todo:
+- 高亮关键字
+- 打印前后相关的行
+- 支持自动查找sepolicy路径
+
+'''
+
 # $ANDROID_BUILD_TOP='/disk01/work/work_berg/COSHIP_X1_5_0_last'
 android_build_top = os.getenv('ANDROID_BUILD_TOP')
 SEPOLICY_DIRS = [android_build_top + "/device/qcom/sepolicy/common/", android_build_top + "/external/sepolicy/",
