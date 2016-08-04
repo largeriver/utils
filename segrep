@@ -11,7 +11,7 @@ line_count = 0
 # $ANDROID_BUILD_TOP='/disk01/work/work_berg/COSHIP_X1_5_0_last'
 android_build_top = os.getenv('ANDROID_BUILD_TOP')
 SEPOLICY_DIRS = [android_build_top + "/device/qcom/sepolicy/common/", android_build_top + "/external/sepolicy/",
-                 android_build_top + "/external/sepolicy/tios_sepolicy/"]
+                 android_build_top + "/external/tios_sepolicy/",android_build_top + "/external/tios_sepolicy/H1OPEN"]
 
 sepolicy_build_files = ['attributes', "security_classes", "access_vectors",
                         'mls', 'roles', 'users',
@@ -30,7 +30,8 @@ flag_match_word = True
 
 
 def whole_match(words, line):
-    line_words = re.findall('\w+', line)
+    #line_words = re.findall('\w+', line)
+    line_words = re.findall('[a-zA-Z0-9-_]+', line)
     # todo: 可以采用set的intersection和join操作来测试
     if (not and_flag) and any((w for w in words if w in line_words)):
         return True
@@ -56,7 +57,7 @@ def grep_func(file_name):
     global file_count
     file_count = file_count + 1
     with open(file_name, 'r') as fh:
-        for index, line in enumerate(fh):
+        for index, line in enumerate(fh,1):
             line = line.strip()
             if not line: continue
             if not line.startswith("#"):
