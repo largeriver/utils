@@ -33,7 +33,10 @@ words = list()
 sepolicy_dirs = list()
 flag_match_word = True
 
+num_before = 0
+num_after = 0
 
+###################################################################################
 class colors:
     ''' Class used to set console colors '''
     HEADER = '\033[95m'
@@ -51,11 +54,13 @@ class colors:
         cls.WARNING = ''
         cls.FAIL = ''
         cls.ENDC = ''
+
+
 def whole_match(words, line):
-    #line_words = re.findall('\w+', line)
+    # line_words = re.findall('\w+', line)
     pattern = re.compile('[a-zA-Z0-9-_]+')
     line_words = re.findall(pattern, line)
-    # todo: 可以采用set的intersection和join操作来测试
+
     if (not and_flag) and any((w for w in words if w in line_words)):
         return True
     if and_flag and all([w in line_words for w in words]):
@@ -64,12 +69,34 @@ def whole_match(words, line):
 
 
 def part_match(words, line):
-    # todo: 可以采用set的intersection和join操作来测试
     if (not and_flag) and any((w in line for w in words)):
         return True
     if and_flag and all([w in line for w in words]):
         return True
     return False
+
+
+def display_file(file_name, matched_lines, max_num, num_before, num_after):
+    # 将同一个文件中，所有匹配的行，以及要求显示的上下邻近行，一次性显示，。
+    # 需要显示的所有的行，set 遍历整数时是有序的
+    line_nums = set()
+    # 计算所有的行
+    for num in matched_lines:
+        line_nums = line_nums.union(
+            filter(lambda n: 0 <= n <= max_num, range(num - num_before, num + num_after + 1)))
+
+    for num in line_nums:
+        line = linecache.getline(file_name, num).rstrip()
+
+        header_color = colors.HEADER
+        if num in matched_lines:
+            for word in words:
+                line = line.replace(word, colors.FAIL + word + colors.ENDC)
+                header_color = colors.WARNING
+
+        print("{} ({}):{}".format(header_color + basename(file_name) + colors.ENDC, num, line))
+
+    print("\n")
 
 
 def grep_func(file_name):
@@ -100,25 +127,9 @@ def grep_func(file_name):
     max_num = num
 
     if matched_lines:
-        line_nums = set()
-        # 计算所有的行
-        for num in matched_lines:
-            line_nums = line_nums.union(
-                filter(lambda n: 0 <= n <= max_num, range(num - num_before, num + num_after + 1)))
+        display_file(file_name,matched_lines,max_num,num_before,num_after)
 
-        for num in line_nums:
-            line = linecache.getline(file_name, num).rstrip()
-
-            header_color = colors.HEADER
-            if num in matched_lines:
-                for word in words:
-                    line = line.replace(word, colors.WARNING + word + colors.ENDC)
-                    header_color = colors.WARNING
-
-            print("{} ({}):{}".format(header_color + basename(file_name) + colors.ENDC, num, line))
-
-        print("\n")
-
+##########################################################################
 
 if __name__ == '__main__':
     myParser = argparse.ArgumentParser(description='在策略中查找关键字')
