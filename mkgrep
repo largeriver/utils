@@ -7,16 +7,14 @@ import os
 import re
 from os.path import join, basename
 from itertools import  chain
+import logging
 
 file_count = 0
 line_count = 0
 
 '''
 todo:
-- 高亮关键字
 - 打印前后相关的行
-- 支持自动查找sepolicy路径
-
 '''
 
 matched_count = 0
@@ -93,20 +91,25 @@ def grep_func(file_name):
 
 
 if __name__ == '__main__':
+
     myParser = argparse.ArgumentParser(description='在策略中查找关键字')
     myParser.add_argument('words', metavar='word', type=str, nargs='+', help='words list to search')
     myParser.add_argument('--or', action='store_false', dest="and_flag", default=True, help="或运算")
     myParser.add_argument('--and', action='store_true', dest="and_flag", help="与运算")
     myParser.add_argument('--part', action="store_false", default=True, help="部分匹配，默认为整字匹配")
-    myParser.add_argument('--fp', action='append', help="指定需要查询的文件匹配模式，默认为查询所有的.txt和.log文件")
+    myParser.add_argument('--fp', action='append',help="指定需要查询的文件名匹配模式，默认为*.txt,*.log, \
+                                                        用法:--fp \"*.txt\" --fp \"*.ini\"")
 
     args = myParser.parse_args()
+
+    logging.basicConfig(level=logging.DEBUG)
 
     # print args
     and_flag = args.and_flag
     words = args.words
     flag_match_word = args.part
     file_patterns = args.fp if args.fp else ["*.txt", "*.log"]
+    logging.debug("file patterns:{}".format(file_patterns))
 
     search_root = os.path.abspath(os.path.curdir)
     print("dirs=", search_root)

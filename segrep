@@ -10,7 +10,6 @@ line_count = 0
 
 '''
 todo:
-- 高亮关键字
 - 打印前后相关的行
 - 支持自动查找sepolicy路径
 
