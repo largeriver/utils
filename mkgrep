@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-# coding:utf8
+# coding:utf-8
+
 import argparse
+import glob
 import os
 import re
 from os.path import join, basename
+from itertools import  chain
 
 file_count = 0
 line_count = 0
@@ -16,20 +19,6 @@ todo:
 
 '''
 
-# $ANDROID_BUILD_TOP='/disk01/work/work_berg/COSHIP_X1_5_0_last'
-android_build_top = os.getenv('ANDROID_BUILD_TOP')
-SEPOLICY_DIRS = [android_build_top + "/device/qcom/sepolicy/common/", android_build_top + "/external/sepolicy/",
-                 android_build_top + "/external/tios_sepolicy/",android_build_top + "/external/tios_sepolicy/H1OPEN"]
-
-sepolicy_build_files = ['attributes', "security_classes", "access_vectors",
-                        'mls', 'roles', 'users',
-                        "initial_sids",
-                        'policy_capabilities',
-                        'fs_use',
-                        'te_macros', "global_macros", 'mls_macros',
-                        'file_contexts', 'genfs_contexts', 'initial_sid_contexts', 'port_contexts', 'service_contexts',
-                        'tios_macros',
-                        '*.te']
 matched_count = 0
 and_flag = True  #
 words = list()
@@ -54,8 +43,10 @@ class colors:
         cls.WARNING = ''
         cls.FAIL = ''
         cls.ENDC = ''
+
+
 def whole_match(words, line):
-    #line_words = re.findall('\w+', line)
+    # line_words = re.findall('\w+', line)
     line_words = re.findall('[a-zA-Z0-9-_]+', line)
     # todo: 可以采用set的intersection和join操作来测试
     if (not and_flag) and any((w for w in words if w in line_words)):
@@ -82,7 +73,7 @@ def grep_func(file_name):
     global file_count
     file_count = file_count + 1
     with open(file_name, 'r') as fh:
-        for index, line in enumerate(fh,1):
+        for index, line in enumerate(fh, 1):
             line = line.strip()
             if not line: continue
             if not line.startswith("#"):
@@ -106,30 +97,29 @@ if __name__ == '__main__':
     myParser.add_argument('words', metavar='word', type=str, nargs='+', help='words list to search')
     myParser.add_argument('--or', action='store_false', dest="and_flag", default=True, help="或运算")
     myParser.add_argument('--and', action='store_true', dest="and_flag", help="与运算")
-    myParser.add_argument('--here', action="store_true", default=False, help="仅搜索当前目录")
     myParser.add_argument('--part', action="store_false", default=True, help="部分匹配，默认为整字匹配")
+    myParser.add_argument('--fp', action='append', help="指定需要查询的文件匹配模式，默认为查询所有的.txt和.log文件")
+
     args = myParser.parse_args()
 
     # print args
     and_flag = args.and_flag
     words = args.words
-    sepolicy_dirs = SEPOLICY_DIRS if not args.here else [os.path.abspath(os.path.curdir)]
     flag_match_word = args.part
-    print("dirs=", sepolicy_dirs)
+    file_patterns = args.fp if args.fp else ["*.txt", "*.log"]
 
-    for sepolicy_dir in sepolicy_dirs:
-        # print "walking",sepolicy_dir
-        for root, dirs, files in os.walk(sepolicy_dir, topdown=True):
-            # skip all subdirs
-            if root != sepolicy_dir: continue
-            # print "root={} dirs={} files={}".format(root,dirs,files)
-            print("-" * 20)
-            print("root=", root)
-            for file in files:
-                if file in sepolicy_build_files or file.endswith(".te"):
-                    # print join(root,file)
-                    grep_func(join(root, file))
+    search_root = os.path.abspath(os.path.curdir)
+    print("dirs=", search_root)
+    for root, dirs, files in os.walk(search_root, topdown=True):
+        print("*** searching {}/ ***".format(root[len(search_root)+1:]))
+        os.chdir(root)
 
-        print("*file_count=", file_count)
-        print("*line_count=", line_count)
-        print("*matched=", matched_count)
+        for file in chain(*[glob.glob(fp) for fp in file_patterns]):
+            if not os.path.isfile(file):
+                continue
+            grep_func(join(root, file))
+
+    os.chdir(search_root)
+    print("*file_count=", file_count)
+    print("*line_count=", line_count)
+    print("*matched=", matched_count)
