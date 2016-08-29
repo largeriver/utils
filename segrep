@@ -53,7 +53,8 @@ class colors:
         cls.ENDC = ''
 def whole_match(words, line):
     #line_words = re.findall('\w+', line)
-    line_words = re.findall('[a-zA-Z0-9-_]+', line)
+    pattern = re.compile('[a-zA-Z0-9-_]+')
+    line_words = re.findall(pattern, line)
     # todo: 可以采用set的intersection和join操作来测试
     if (not and_flag) and any((w for w in words if w in line_words)):
         return True
