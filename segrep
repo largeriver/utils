@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding:utf8
 import argparse
+import linecache
 import os
 import re
 from os.path import join, basename
@@ -10,9 +11,6 @@ line_count = 0
 
 '''
 todo:
-- 打印前后相关的行
-- 支持自动查找sepolicy路径
-
 '''
 
 # $ANDROID_BUILD_TOP='/disk01/work/work_berg/COSHIP_X1_5_0_last'
@@ -79,25 +77,46 @@ def grep_func(file_name):
     global matched_count
     global line_count
     global file_count
-    file_count = file_count + 1
-    with open(file_name, 'r') as fh:
-        for index, line in enumerate(fh,1):
-            line = line.strip()
-            if not line: continue
-            if not line.startswith("#"):
-                line_count = line_count + 1
-            # print line
+    file_count += + 1
 
-            if line.startswith("#") and not line.startswith("##"):
-                continue
+    matched_lines = []
 
-            matched = whole_match(words, line) if flag_match_word else part_match(words, line)
-            if matched:
-                color_line = line.rstrip()
+    for num, line in enumerate(linecache.getlines(file_name), 1):
+        line = line.strip()
+        if not line: continue
+        if not line.startswith("#"):
+            line_count += 1
+        # print line
+
+        if line.startswith("#") and not line.startswith("##"):
+            continue
+
+        matched = whole_match(words, line) if flag_match_word else part_match(words, line)
+        if matched:
+            matched_lines.append(num)
+            matched_count += 1
+
+    max_num = num
+
+    if matched_lines:
+        line_nums = set()
+        # 计算所有的行
+        for num in matched_lines:
+            line_nums = line_nums.union(
+                filter(lambda n: 0 <= n <= max_num, range(num - num_before, num + num_after + 1)))
+
+        for num in line_nums:
+            line = linecache.getline(file_name, num).rstrip()
+
+            header_color = colors.HEADER
+            if num in matched_lines:
                 for word in words:
-                    color_line = color_line.replace(word, colors.WARNING + word + colors.ENDC)
-                print("{} ({}):{}".format(colors.HEADER + basename(file_name) + colors.ENDC, index, color_line))
-                matched_count += 1
+                    line = line.replace(word, colors.WARNING + word + colors.ENDC)
+                    header_color = colors.WARNING
+
+            print("{} ({}):{}".format(header_color + basename(file_name) + colors.ENDC, num, line))
+
+        print("\n")
 
 
 if __name__ == '__main__':
@@ -107,12 +126,20 @@ if __name__ == '__main__':
     myParser.add_argument('--and', action='store_true', dest="and_flag", help="与运算")
     myParser.add_argument('--here', action="store_true", default=False, help="仅搜索当前目录")
     myParser.add_argument('--part', action="store_false", default=True, help="部分匹配，默认为整字匹配")
+    myParser.add_argument('-A', '--after', action="store", default=0, type=int,
+                          help="Print  NUM  lines  of trailing context after matching lines.")
+    myParser.add_argument('-B', '--before', action="store", default=0, type=int,
+                          help="Print NUM lines of leading context before matching  lines.")
+    myParser.add_argument('-C', '--context', action="store", default=0, type=int,
+                          help="Print  NUM  lines of output context.")
     args = myParser.parse_args()
 
     # print args
     and_flag = args.and_flag
     words = args.words
     sepolicy_dirs = SEPOLICY_DIRS if not args.here else [os.path.abspath(os.path.curdir)]
+    num_before = max(args.before, args.context)
+    num_after = max(args.after, args.context)
     flag_match_word = args.part
     print("dirs=", sepolicy_dirs)
 
