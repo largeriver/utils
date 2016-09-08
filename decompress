@@ -1,0 +1,24 @@
+#!/bin/bash
+
+function decompressf(){
+    local filename=$1
+    echo "filename=$filename"
+
+    
+    #case ${filename##*.} in
+    case $filename in
+        *.tar) tar -xf $filename;;
+        *.tgz|*.tar.gz) tar -I pigz -xf $filename;;
+        *.bz2) tar -I pbzip2 -xf $filename;;
+        *.zip) unzip -o $filename;;
+        *.rar) unrar x -y $filename;;
+        *.7z) 7z x -y $filename;;
+    
+        *) echo "ERROR:cannot extract $filename";;
+    esac
+}
+
+
+decompressf $1
+
+ 
