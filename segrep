@@ -75,10 +75,14 @@ def part_match(words, line):
         return True
     return False
 
+_dis_index=0
 
 def display_file(file_name, matched_lines, max_num, num_before, num_after):
     # 将同一个文件中，所有匹配的行，以及要求显示的上下邻近行，一次性显示，。
     # 需要显示的所有的行，set 遍历整数时是有序的
+    global _dis_index
+    _dis_index=(_dis_index+1)%2
+    
     line_nums = set()
     # 计算所有的行
     for num in matched_lines:
@@ -88,15 +92,15 @@ def display_file(file_name, matched_lines, max_num, num_before, num_after):
     for num in line_nums:
         line = linecache.getline(file_name, num).rstrip()
 
-        header_color = colors.HEADER
+        header_color = (colors.OKBLUE,colors.OKGREEN)[_dis_index]
         if num in matched_lines:
             for word in words:
                 line = line.replace(word, colors.FAIL + word + colors.ENDC)
-                header_color = colors.WARNING
+                header_color = (colors.HEADER,colors.WARNING)[_dis_index]
 
         print("{} ({}):{}".format(header_color + basename(file_name) + colors.ENDC, num, line))
 
-    print("\n")
+    #print("\n")
 
 
 def grep_func(file_name):
@@ -168,6 +172,6 @@ if __name__ == '__main__':
                     # print join(root,file)
                     grep_func(join(root, file))
 
-        print("*file_count=", file_count)
-        print("*line_count=", line_count)
-        print("*matched=", matched_count)
+        print("file_count={},line_count={},matched={}", file_count,line_count,matched_count)
+
+    print("done!")

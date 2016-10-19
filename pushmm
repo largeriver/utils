@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#本命令读取mm命令编译结果，将其推送到手机的对应目录
+#need modify build/envsetup.sh
+#function mm(){
+#...
+#ONE_SHOT_MAKEFILE=$M $DRV make -C $T -f build/core/main.mk $MODULES $ARGS |tee /tmp/${USER}_mm.txt 
+#...
+#}
+
+
+function push2dev(){
+	echo -e "\n"
+	ins=$1
+	outprefix=${OUT#$ANDROID_BUILD_TOP/}
+	#src=$ANDROID_BUILD_TOP/$ins
+	target=${ins#$outprefix}
+	echo adb push '$OUT'$target $target
+	adb push $OUT$target $target
+	echo -e ${target##*/} 
+}
+
+results=$(grep "Install:" /tmp/${USER}_mm.txt |cut -c10-)
+
+if [ $results ]; then
+
+adb root
+adb wait-for-device
+adb remount
+adb wait-for-device
+
+for line in ${results}
+do
+	  push2dev $line
+done
+
+fi
+
+
+
+
