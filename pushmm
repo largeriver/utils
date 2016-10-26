@@ -22,7 +22,9 @@ function push2dev(){
 
 results=$(grep "Install:" /tmp/${USER}_mm.txt |cut -c10-)
 
-if [ $results ]; then
+echo $results
+
+if [ "$results" ]; then
 
 adb root
 adb wait-for-device
