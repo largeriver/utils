@@ -20,7 +20,8 @@ function push2dev(){
 	echo -e ${target##*/} 
 }
 
-results=$(grep "Install:" /tmp/${USER}_mm.txt |cut -c10-)
+#results=$(grep "Install:" /tmp/${USER}_mm.txt |cut -c10-)
+results=$(grep "Install:" .tmp.mm.txt |cut -c10-) 
 
 echo $results
 
