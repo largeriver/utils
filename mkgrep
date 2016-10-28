@@ -122,6 +122,9 @@ def grep_func(file_name):
 
 ##########################################################################
 
+default_fp=["*.txt", "*.log","*.c","*.cpp","*.h","*.java","*.mk","*.te","*.py"]
+default_ignore_dirs=('.git','.svn','.idea')
+
 if __name__ == '__main__':
 
     myParser = argparse.ArgumentParser(description='文本多关键字匹配')
@@ -136,8 +139,8 @@ if __name__ == '__main__':
     myParser.add_argument('-C', '--context', action="store", default=0, type=int,
                           help="Print  NUM  lines of output context.")
 
-    myParser.add_argument('--fp', action='append', help="指定需要查询的文件名匹配模式，默认为*.txt,*.log, \
-                                                        用法:--fp \"*.txt\" --fp \"*.ini\"")
+    myParser.add_argument('--fp', action='append', help="指定需要查询的文件名匹配模式，默认为{}, \
+                                                        用法:--fp \"*.txt\" --fp \"*.ini\"".format(default_fp))
 
     args = myParser.parse_args()
 
@@ -149,15 +152,19 @@ if __name__ == '__main__':
     num_before = max(args.before, args.context)
     num_after = max(args.after, args.context)
     flag_match_word = args.part
-    file_patterns = args.fp if args.fp else ["*.txt", "*.log"]
+    file_patterns = args.fp if args.fp else default_fp
     logging.debug("file patterns:{}".format(file_patterns))
 
     search_root = os.path.abspath(os.path.curdir)
     print("dirs=", search_root)
     for root, dirs, files in os.walk(search_root, topdown=True):
-        print("*** searching {}/ ***".format(root[len(search_root) + 1:]))
-        os.chdir(root)
+        _p = root[len(search_root) + 1:]
+        _p = _p if _p else '.'
+        print("*** searching {} ***".format(_p))
+        # don't visit .git directories
+        [dirs.remove(idir) for idir in default_ignore_dirs if idir in dirs]
 
+		
         for file in chain(*[glob.glob(fp) for fp in file_patterns]):
             if not os.path.isfile(file):
                 continue
