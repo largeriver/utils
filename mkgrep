@@ -100,6 +100,7 @@ def grep_func(file_name):
 
     matched_lines = []
 
+    max_num = 0
     for num, line in enumerate(linecache.getlines(file_name), 1):
         line = line.strip()
         if not line: continue
@@ -115,7 +116,7 @@ def grep_func(file_name):
             matched_lines.append(num)
             matched_count += 1
 
-    max_num = num
+        max_num = num
 
     if matched_lines:
         display_file(file_name,matched_lines,max_num,num_before,num_after)
@@ -139,8 +140,8 @@ if __name__ == '__main__':
     myParser.add_argument('-C', '--context', action="store", default=0, type=int,
                           help="Print  NUM  lines of output context.")
 
-    myParser.add_argument('--fp', action='append', help="指定需要查询的文件名匹配模式，默认为{}, \
-                                                        用法:--fp \"*.txt\" --fp \"*.ini\"".format(default_fp))
+    myParser.add_argument('--fp', action='append', help='''指定需要查询的文件名匹配模式，默认为{},\r\n
+															用法:--fp "*.txt" --fp "*.ini"'''.format(default_fp))
 
     args = myParser.parse_args()
 
@@ -166,8 +167,8 @@ if __name__ == '__main__':
 
 		
         for file in chain(*[glob.glob(fp) for fp in file_patterns]):
-            if not os.path.isfile(file):
-                continue
+            #if not os.path.isfile(file):
+            #    continue
             grep_func(join(root, file))
 
     os.chdir(search_root)
