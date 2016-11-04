@@ -24,8 +24,12 @@ words = list()
 sepolicy_dirs = list()
 flag_match_word = True
 
+
 num_before = 0
 num_after = 0
+search_root = None
+verbose = False
+
 
 ###################################################################################
 class colors:
@@ -76,6 +80,8 @@ def display_file(file_name, matched_lines, max_num, num_before, num_after):
         line_nums = line_nums.union(
             filter(lambda n: 0 <= n <= max_num, range(num - num_before, num + num_after + 1)))
 
+    _name = basename(file_name) if verbose else file_name[len(search_root) + 1:]
+
     for num in line_nums:
         line = linecache.getline(file_name, num).rstrip()
 
@@ -85,7 +91,7 @@ def display_file(file_name, matched_lines, max_num, num_before, num_after):
                 line = line.replace(word, colors.FAIL + word + colors.ENDC)
                 header_color = colors.WARNING
 
-        print("{} ({}):{}".format(header_color + basename(file_name) + colors.ENDC, num, line))
+        print("{} ({}):{}".format(header_color + _name + colors.ENDC, num, line))
 
     print("\n")
 
@@ -99,7 +105,8 @@ def grep_func(file_name):
     file_count += + 1
 
     matched_lines = []
-
+    if verbose:
+        print(file_name)
     max_num = 0
     for num, line in enumerate(linecache.getlines(file_name), 1):
         line = line.strip()
@@ -119,14 +126,24 @@ def grep_func(file_name):
         max_num = num
 
     if matched_lines:
-        display_file(file_name,matched_lines,max_num,num_before,num_after)
+        display_file(file_name, matched_lines, max_num, num_before, num_after)
+
 
 ##########################################################################
 
-default_fp=["*.txt", "*.log","*.c","*.cpp","*.h","*.java","*.mk","*.te","*.py"]
-default_ignore_dirs=('.git','.svn','.idea')
+default_fp = ["*.txt", "*.log", "*.c", "*.cpp", "*.h", "*.java", "*.mk", "*.te", "*.py"]
+default_ignore_dirs = ('.git', '.svn', '.idea', '.nouse')
 
-if __name__ == '__main__':
+
+def main():
+    global and_flag
+    global words
+    global num_before
+    global num_after
+    global flag_match_word
+    global verbose
+    global search_root
+
 
     myParser = argparse.ArgumentParser(description='文本多关键字匹配')
     myParser.add_argument('words', metavar='word', type=str, nargs='+', help='words list to search')
@@ -142,10 +159,12 @@ if __name__ == '__main__':
 
     myParser.add_argument('--fp', action='append', help='''指定需要查询的文件名匹配模式，默认为{},\r\n
 															用法:--fp "*.txt" --fp "*.ini"'''.format(default_fp))
+    myParser.add_argument('-V', '--verbose', action='store_true', dest="verbose", help="显示详细信息")
 
     args = myParser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG)
+    verbose = args.verbose
+    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
     # print args
     and_flag = args.and_flag
@@ -155,23 +174,35 @@ if __name__ == '__main__':
     flag_match_word = args.part
     file_patterns = args.fp if args.fp else default_fp
     logging.debug("file patterns:{}".format(file_patterns))
+    logging.debug("ignored dirs:{}".format(default_ignore_dirs))
+
 
     search_root = os.path.abspath(os.path.curdir)
+
+
+
     print("dirs=", search_root)
     for root, dirs, files in os.walk(search_root, topdown=True):
         _p = root[len(search_root) + 1:]
         _p = _p if _p else '.'
-        print("*** searching {} ***".format(_p))
+        os.chdir(root)  # glob.glog only match files in current path
+
         # don't visit .git directories
         [dirs.remove(idir) for idir in default_ignore_dirs if idir in dirs]
 
-		
-        for file in chain(*[glob.glob(fp) for fp in file_patterns]):
-            #if not os.path.isfile(file):
+        if args.verbose:
+            print("*** searching {} ***".format(_p))
+
+        for f in chain(*[glob.glob(fp) for fp in file_patterns]):
+            # if not os.path.isfile(f):
             #    continue
-            grep_func(join(root, file))
+            grep_func(join(root, f))
 
     os.chdir(search_root)
     print("*file_count=", file_count)
     print("*line_count=", line_count)
     print("*matched=", matched_count)
+
+
+if __name__ == '__main__':
+    main()
