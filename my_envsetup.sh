@@ -15,6 +15,13 @@ function jgrep()
     find . -name .repo -prune -o -name .git -prune -o -name .svn -prune -o -name out -prune -o -type f -name "*\.java" -print0 | xargs -0 grep --color -n "$@" 
 }
 
+function pygrep()
+{   
+    find . -name .repo -prune -o -name .git -prune -o -name .svn -prune -o -name out -prune -o -type f -name "*\.py" -print0 | xargs -0 grep --color -
+n "$@"
+}
+
+
 function cgrep()                                                                                                                                                                     
 {
     find . -name .repo -prune -o -name .git -prune -o -name .svn -prune -o -name out -prune -o -type f \( -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.h' \) -print0 | xargs -0 grep --color -n "$@"
