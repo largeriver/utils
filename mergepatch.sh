@@ -19,9 +19,9 @@ USAGE
 #    svn 提交
 
 # SVN提交目录
-SVNDIR=/home/berg/Work/prj_H1/trunk
+SVNDIR=~/Work/prj_H1/trunk
 # SVN验证目录
-SVNDIR2=/home/berg/Work/svnRepos/prj_H1/trunk
+SVNDIR2=~/Work/svnRepos/prj_H1/trunk
 
 
 #参数解析
