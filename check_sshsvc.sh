@@ -14,5 +14,7 @@ function check(){
 #    echo $svc
 #done
 
+# use with crontab: 0,30 * * * *  /home/pi/bin/check_sshsvc.sh kvm.andjoin.com 2222  sshkvm  1>>/tmp/checksshkvm.log 2>&1
+
 check $1 $2 $3
 
