@@ -4,7 +4,7 @@ function check(){
         nc -v -z  -w 10 $host $port
 
         if [ $? -ne 0 ]; then
-                echo "!!!restart $prog"
+                echo "`date +%D_%H:%M:%S`: restart $prog ......"
                 supervisorctl restart $prog
         fi
 }
@@ -13,5 +13,6 @@ function check(){
 #for svc in ${services[@]}; do
 #    echo $svc
 #done
+
 check $1 $2 $3
 
