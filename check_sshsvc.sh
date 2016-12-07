@@ -1,9 +1,9 @@
 #! /bin/bash
 function check(){
         host=$1;port=$2;prog=$3
-        nc -v -z  -w 10 $host $port
-
-        if [ $? -ne 0 ]; then
+        #nc -zv  -w 10 $host $port
+        #if [ $? -ne 0 ]; then
+	if ! nc -zv  -w 10 $host $port; then
                 echo "`date +%D_%H:%M:%S`: restart $prog ......"
                 supervisorctl restart $prog
         fi
